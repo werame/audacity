@@ -1549,36 +1549,58 @@ bool NyquistEffect::ProcessOne()
    wxASSERT(rval == nyx_audio);
 
    int outChannels = nyx_get_audio_num_channels();
-   if (outChannels > (int)mCurNumChannels) {
-      Effect::MessageBox( XO("Nyquist returned too many audio channels.\n") );
-      return false;
-   }
 
    if (outChannels == -1) {
       Effect::MessageBox(
-         XO("Nyquist returned one audio channel as an array.\n") );
+         XO("Nyquist returned one audio channel as an array.\n"));
       return false;
    }
 
    if (outChannels == 0) {
-      Effect::MessageBox( XO("Nyquist returned an empty array.\n") );
+      Effect::MessageBox(XO("Nyquist returned an empty array.\n"));
       return false;
+   }
+
+   if (outChannels > (int)mCurNumChannels) {
+      Effect::MessageBox( XO("Nyquist returned too many audio channels.\n") );
+      // But we're actually going to handle them by creating a new track,
+      // at least for the generate plug-in type (for now).
+      // Only for stereo though beucase the "legacy code" below isn't
+      // up to greater 2 multichannel track handling (outputTrack[2]
+      // mOutputTrack is also 2-sized in the header file etc.)
+      if (outChannels > 2)
+         return false;
    }
 
    std::shared_ptr<WaveTrack> outputTrack[2];
 
    double rate = mCurTrack[0]->GetRate();
+   unsigned int numChansBoosted = mCurNumChannels;
    for (int i = 0; i < outChannels; i++) {
       if (outChannels == (int)mCurNumChannels) {
          rate = mCurTrack[i]->GetRate();
       }
+      // problem if mismatched sizes?! No, because EmptyCopy just copies metadata
+      if (mCurTrack[i] != nullptr) {
+         outputTrack[i] = mCurTrack[i]->EmptyCopy();
+      }
+      else {
+         ++numChansBoosted;
+         outputTrack[i] = outputTrack[i - 1]->EmptyCopy();
+         //++mCurNumChannels; // because cleanup code will only clean this many
+         // ^^ todo: need to check if there's closure capture on that cleanup
+         //    and if so when the capture happens; it needs to see this change.
+         // actually don't boost yet, because we stil need to detect the sitution
+         // further below. Maybe we could just add a flag for this??
+      }
 
-      outputTrack[i] = mCurTrack[i]->EmptyCopy();
       outputTrack[i]->SetRate( rate );
 
       // Clean the initial buffer states again for the get callbacks
       // -- is this really needed?
       mCurBuffer[i].reset();
+      // Seems ok if not previously allocated (i.e. mono->stereo) because
+      // the delete done by the reset is conditional on ptr being not null
    }
 
    // Now fully evaluate the sound
@@ -1610,9 +1632,28 @@ bool NyquistEffect::ProcessOne()
       }
    }
 
+   // Need allocate new WaveTracks in the proj if "chan overflow"
+   // We'll make these the exact outputTracks that were built above!
+   if (numChansBoosted > mCurNumChannels) {
+      //SelectUtilities::SelectNone(project); // may be a little strange to change selection, pehaps should save it too and restore it
+      for (size_t i = 0; i < numChansBoosted; i++) {
+         AddToOutputTracks(outputTrack[i]); // do I need to hold onto the result?
+         outputTrack[i]->SetSelected(true);
+      }
+
+      mProjectChanged = true;
+      return true;
+   }
+   /*
+   if (numChansBoosted > 1) {
+      tracks.MakeMultiChannelTrack(outputTrack[0], numChansBoosted, true);
+   }  mOMap somehitn
+   */
+
    for (size_t i = 0; i < mCurNumChannels; i++) {
       WaveTrack *out;
 
+      // mCurNumChannels was boosted above for mono->stereo, so this should be ok
       if (outChannels == (int)mCurNumChannels) {
          out = outputTrack[i].get();
       }
