@@ -1590,8 +1590,9 @@ bool NyquistEffect::ProcessOne()
          //++mCurNumChannels; // because cleanup code will only clean this many
          // ^^ todo: need to check if there's closure capture on that cleanup
          //    and if so when the capture happens; it needs to see this change.
-         // actually don't boost yet, because we stil need to detect the sitution
-         // further below. Maybe we could just add a flag for this??
+         // actually don't boost mCurNumChannels itself yet, because we stil
+         // need to detect the situation further below. Maybe we could just add
+         // a flag for this??
       }
 
       outputTrack[i]->SetRate( rate );
@@ -1638,13 +1639,14 @@ bool NyquistEffect::ProcessOne()
       //SelectUtilities::SelectNone(project); // may be a little strange to change selection, pehaps should save it too and restore it
       for (size_t i = 0; i < numChansBoosted; i++) {
          AddToOutputTracks(outputTrack[i]); // do I need to hold onto the result?
-         outputTrack[i]->SetSelected(true);
+         outputTrack[i]->SetSelected(false);
+         // ^^ let's see if not selecting the tracks pacifies the pRange iterator.
       }
 
       mProjectChanged = true;
       return true;
    }
-   /*
+   /* later aligator
    if (numChansBoosted > 1) {
       tracks.MakeMultiChannelTrack(outputTrack[0], numChansBoosted, true);
    }  mOMap somehitn
