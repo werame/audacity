@@ -90,6 +90,7 @@ effects from this one class.
 #include <ostream>
 #include <sstream>
 #include <float.h>
+#include <SelectUtilities.h>
 
 int NyquistEffect::mReentryCount = 0;
 
@@ -1582,7 +1583,7 @@ bool NyquistEffect::ProcessOne()
       }
       // problem if mismatched sizes?! No, because EmptyCopy just copies metadata
       if (mCurTrack[i] != nullptr) {
-         outputTrack[i] = mCurTrack[i]->EmptyCopy();
+         outputTrack[i] = mCurTrack[i]->EmptyCopy(); // FIXME: throws exception on ";type generate" with some sound region selected!
       }
       else {
          ++numChansBoosted;
@@ -1636,11 +1637,20 @@ bool NyquistEffect::ProcessOne()
    // Need allocate new WaveTracks in the proj if "chan overflow"
    // We'll make these the exact outputTracks that were built above!
    if (numChansBoosted > mCurNumChannels) {
-      //SelectUtilities::SelectNone(project); // may be a little strange to change selection, pehaps should save it too and restore it
+      // TODO: may be a little strange to change selection, pehaps should save it too and restore it
+      //SelectUtilities::SelectNone(project); // do I even need to do this to MakeMultiChannelTrack?!
       for (size_t i = 0; i < numChansBoosted; i++) {
-         AddToOutputTracks(outputTrack[i]); // do I need to hold onto the result?
+         AddToOutputTracks(outputTrack[i]); // Do I need to hold onto the result? Seems not.
          outputTrack[i]->SetSelected(false);
-         // ^^ let's see if not selecting the tracks pacifies the pRange iterator.
+         // ^^ Let's see if not selecting the tracks pacifies the pRange iterator. (It does!)
+         //    So will have to change to false after MakeMultiChannelTrack to avoid pRange endless looping.
+      }
+
+      if (numChansBoosted > 1) {
+         auto pProject = (AudacityProject*) FindProject(); // de-const for MakeMultiChannelTrack
+         auto &tracks = TrackList::Get(*pProject); // hopefully pRange is ok with this (turns out it's not!)
+         auto left = outputTrack[0].get();
+         tracks.MakeMultiChannelTrack(*left, numChansBoosted, true); // INCONSISTENCY_EXCEPTION!
       }
 
       mProjectChanged = true;
