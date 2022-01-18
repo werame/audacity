@@ -1648,20 +1648,15 @@ bool NyquistEffect::ProcessOne()
       }
 
       if (numChansBoosted > 1) {
-         auto pProject = (AudacityProject*) FindProject(); // de-const for MakeMultiChannelTrack
-         auto &tracks = TrackList::Get(*pProject); // hopefully pRange is ok with this (turns out it's not!)
+         auto pTracks = outputTrack[0]->GetOwner(); // TrackList::Get(*FindProject()) is from before the current transaction began!
          auto left = outputTrack[0].get();
-         tracks.MakeMultiChannelTrack(*left, numChansBoosted, true); // INCONSISTENCY_EXCEPTION!
+         pTracks->MakeMultiChannelTrack(*left, numChansBoosted, true); //  no INCONSISTENCY_EXCEPTION now.
+         // luckily the resulting track is not selected by default, so pRange is skipping over it
       }
 
       mProjectChanged = true;
       return true;
    }
-   /* later aligator
-   if (numChansBoosted > 1) {
-      tracks.MakeMultiChannelTrack(outputTrack[0], numChansBoosted, true);
-   }  mOMap somehitn
-   */
 
    for (size_t i = 0; i < mCurNumChannels; i++) {
       WaveTrack *out;
