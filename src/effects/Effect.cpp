@@ -111,6 +111,8 @@ Effect::Effect()
    mProjectRate = QualitySettings::DefaultSampleRate.ReadWithDefault(44100);
 
    mIsBatch = false;
+
+   mNewTrack = NULL; // going with the non-initializer-list "style" here, which generates lots of compiler warnings...
 }
 
 Effect::~Effect()
@@ -1053,6 +1055,8 @@ bool Effect::DoEffect(double projectRate,
    if ((GetType() == EffectTypeGenerate || GetPath() == NYQUIST_PROMPT_ID) && (mNumTracks == 0)) {
       newTrack = mTracks->Add(mFactory->NewWaveTrack());
       newTrack->SetSelected(true);
+      // need a (protected) mmeber for subclasses to access this
+      mNewTrack = newTrack;
    }
 
    mT0 = selectedRegion.t0();

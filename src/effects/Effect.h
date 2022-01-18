@@ -497,6 +497,9 @@ private:
    size_t mBlockSize;
    unsigned mNumChannels;
 
+protected:
+   Track *mNewTrack; // auto-generated track that subclasses may tweak
+
 public:
    const static wxString kUserPresetIdent;
    const static wxString kFactoryPresetIdent;
