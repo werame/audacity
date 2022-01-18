@@ -992,6 +992,12 @@ finish:
       dlog.ShowModal();
    }
 
+   // Need to do deferred, Nyquist-"requested" deletion here because if done erlier
+   // it would invalidate the pRange iterator(s).
+   if (mDelNewOutputTrack) {
+      mOutputTracks->Remove(mNewOutputTrack);
+   }
+
    // Has rug been pulled from under us by some effect done within Nyquist??
    if( !bOnePassTool && ( nEffectsSoFar == nEffectsDone ))
       ReplaceProcessedTracks(success);
@@ -1654,13 +1660,9 @@ bool NyquistEffect::ProcessOne()
          pTracks->MakeMultiChannelTrack(*left, numChansBoosted, true); //  no INCONSISTENCY_EXCEPTION now.
          // luckily the resulting track is not selected by default, so pRange is skipping over it
          if (mNewOutputTrack != NULL) {
-            //auto pTracks = mNewTrack->GetOwner(); // see if this make a diff to insta-assert
-            //pTracks->Remove(mNewTrack); // remove the auto-generated emtpy track, if it exists
-            // ^^ unfortunately this blows up right away
-            mOutputTracks->Remove(mNewOutputTrack); // try it how src/effects/StereoToMono.cpp:217 does it!
-            // hopefully ReplaceProcessedTracks can work out its map magic, even when we both add and delete tracks!
-            // Well, it dies right away still, and I have no idea why.
-            // maybe I should try FindById?
+            //mOutputTracks->Remove(mNewOutputTrack); // try it how src/effects/StereoToMono.cpp:217 does it!
+            // can't delete mNewOutputTrack here because that would invalidate the pRange iterator(s)
+            mDelNewOutputTrack = true;
          }
       }
 

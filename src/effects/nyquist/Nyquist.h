@@ -288,6 +288,8 @@ private:
 
    std::exception_ptr mpException {};
 
+   bool              mDelNewOutputTrack{ false };
+
    DECLARE_EVENT_TABLE()
 
    friend class NyquistEffectsModule;
