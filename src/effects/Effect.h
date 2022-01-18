@@ -409,6 +409,13 @@ protected:
    // Use this to append a NEW output track.
    Track *AddToOutputTracks(const std::shared_ptr<Track> &t);
 
+   // Searches for a pointer in mIMap and removes its corresponding clone from
+   // mOutputTracks, found via the mIMap <-> mOMap index matching.
+   // Returns true on find success, and false on find failure.
+   // Mega-kludge needed bacause track IDs change when inserted into a new list,
+   // see what TrackList::DoAdd does. 
+   //bool RemoveCorrespondentFromOutputTracks(Track* pInputTrack);
+
 //
 // protected data
 //
@@ -498,7 +505,8 @@ private:
    unsigned mNumChannels;
 
 protected:
-   Track *mNewTrack; // auto-generated track that subclasses may tweak
+   Track *mNewTrack; // Auto-generated track...
+   Track *mNewOutputTrack; // And its correspondent CopyInputTracks() creates
 
 public:
    const static wxString kUserPresetIdent;

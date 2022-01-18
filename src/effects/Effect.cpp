@@ -113,6 +113,7 @@ Effect::Effect()
    mIsBatch = false;
 
    mNewTrack = NULL; // going with the non-initializer-list "style" here, which generates lots of compiler warnings...
+   mNewOutputTrack = NULL;
 }
 
 Effect::~Effect()
@@ -1877,6 +1878,9 @@ void Effect::CopyInputTracks(bool allSyncLockSelected)
       Track *o = mOutputTracks->Add(aTrack->Duplicate());
       mIMap.push_back(aTrack);
       mOMap.push_back(o);
+      if (aTrack == mNewTrack) {
+         mNewOutputTrack = o;
+      }
    }
 }
 
@@ -1886,6 +1890,27 @@ Track *Effect::AddToOutputTracks(const std::shared_ptr<Track> &t)
    mOMap.push_back(t.get());
    return mOutputTracks->Add(t);
 }
+/*
+bool Effect::RemoveCorrespondentFromOutputTracks(Track* pInputTrack)
+{
+   size_t cnt = mIMap.size();
+   size_t i = 0;
+
+   while (i < cnt && mIMap[i] != pInputTrack) {
+      ++i;
+   }
+
+   if (i < cnt) {
+      auto pOutputTrack = mOMap[i];
+
+
+      // todo: make mOMap[i] null here?
+      return true;
+   }
+
+   return false;
+}
+*/
 
 Effect::AddedAnalysisTrack::AddedAnalysisTrack(Effect *pEffect, const wxString &name)
    : mpEffect(pEffect)

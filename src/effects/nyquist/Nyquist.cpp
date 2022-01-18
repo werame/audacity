@@ -1653,11 +1653,11 @@ bool NyquistEffect::ProcessOne()
          auto left = outputTrack[0].get();
          pTracks->MakeMultiChannelTrack(*left, numChansBoosted, true); //  no INCONSISTENCY_EXCEPTION now.
          // luckily the resulting track is not selected by default, so pRange is skipping over it
-         if (mNewTrack != NULL) {
+         if (mNewOutputTrack != NULL) {
             //auto pTracks = mNewTrack->GetOwner(); // see if this make a diff to insta-assert
             //pTracks->Remove(mNewTrack); // remove the auto-generated emtpy track, if it exists
             // ^^ unfortunately this blows up right away
-            mOutputTracks->Remove(mNewTrack); // try it how src/effects/StereoToMono.cpp:217 does it!
+            mOutputTracks->Remove(mNewOutputTrack); // try it how src/effects/StereoToMono.cpp:217 does it!
             // hopefully ReplaceProcessedTracks can work out its map magic, even when we both add and delete tracks!
             // Well, it dies right away still, and I have no idea why.
             // maybe I should try FindById?
