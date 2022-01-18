@@ -845,6 +845,7 @@ bool NyquistEffect::Process()
       mDebugOutput = Verbatim( "%s" ).Format( std::cref( mDebugOutputStr ) );
 
       mCurTrack[0] = pRange ? *pRange->first : nullptr;
+      mCurTrack[1] = nullptr; // WR: need not be left uninitialized for mono->stereo conversions to detect the condition and allocate it later.
       mCurNumChannels = 1;
       if ( (mT1 >= mT0) || bOnePassTool ) {
          if (bOnePassTool) {
@@ -1582,8 +1583,8 @@ bool NyquistEffect::ProcessOne()
          rate = mCurTrack[i]->GetRate();
       }
       // problem if mismatched sizes?! No, because EmptyCopy just copies metadata
-      if (mCurTrack[i] != nullptr) {
-         outputTrack[i] = mCurTrack[i]->EmptyCopy(); // FIXME: throws exception on ";type generate" with some sound region selected!
+      if (mCurTrack[i] != nullptr) { // test was failing in debug mode because mCurTrack[1] was uninitialized as cdcdcd... fixed at origin now.
+         outputTrack[i] = mCurTrack[i]->EmptyCopy();
       }
       else {
          ++numChansBoosted;
