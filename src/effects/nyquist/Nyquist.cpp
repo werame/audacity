@@ -1570,7 +1570,9 @@ bool NyquistEffect::ProcessOne()
    }
 
    if (outChannels > (int)mCurNumChannels) {
-      Effect::MessageBox( XO("Nyquist returned too many audio channels.\n") );
+      if (mNewOutputTrack == NULL) { // no nag if the overflow is for the auto-generate track
+         Effect::MessageBox(XO("Nyquist returned too many audio channels.\n"));
+      }
       // But we're actually going to handle them by creating a new track,
       // at least for the generate plug-in type (for now).
       // Only for stereo though beucase the "legacy code" below isn't
