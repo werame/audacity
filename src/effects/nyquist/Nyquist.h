@@ -275,6 +275,7 @@ private:
    size_t            mCurBufferLen[2];
 
    WaveTrack        *mOutputTrack[2];
+   bool              mDelNewOutputTrack {false};
 
    wxArrayString     mCategories;
 
@@ -287,8 +288,6 @@ private:
    wxTextCtrl *mCommandText;
 
    std::exception_ptr mpException {};
-
-   bool              mDelNewOutputTrack{ false };
 
    DECLARE_EVENT_TABLE()
 
