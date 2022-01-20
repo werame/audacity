@@ -992,6 +992,12 @@ finish:
       dlog.ShowModal();
    }
 
+   // Need to do deferred, Nyquist-"requested" deletion here because if done erlier
+   // it would invalidate the pRange iterator(s).
+   if (mDelNewOutputTrack) {
+      mOutputTracks->Remove(mNewOutputTrack);
+   }
+
    // Has rug been pulled from under us by some effect done within Nyquist??
    if( !bOnePassTool && ( nEffectsSoFar == nEffectsDone ))
       ReplaceProcessedTracks(success);
@@ -1648,7 +1654,12 @@ bool NyquistEffect::ProcessOne()
          auto left = outputTrack[0].get();
          pTracks->MakeMultiChannelTrack(*left, numChansBoosted, true);
          // ^^ Luckily the resulting track (group) is not selected by default,
-         // so pRange is skipping over it.
+         //    so pRange is skipping over it.
+         if (mNewOutputTrack != NULL) {
+            // Can't delete mNewOutputTrack here because that would invalidate
+            // the pRange iterator(s) when they point right at mNewOutputTrack
+            mDelNewOutputTrack = true;
+         }
       }
 
       mProjectChanged = true;
