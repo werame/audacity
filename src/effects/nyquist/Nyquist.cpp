@@ -995,6 +995,9 @@ finish:
    // Need to do deferred, Nyquist-"requested" deletion here because if done erlier
    // it would invalidate the pRange iterator(s).
    if (mDelNewOutputTrack) {
+      // The Nyquist object is persitent, so need ensure next run doesn't
+      // try to re-delete unless a new mNewOutputTrack has been allocated.
+      mDelNewOutputTrack = false;
       mOutputTracks->Remove(mNewOutputTrack);
    }
 

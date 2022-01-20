@@ -1009,6 +1009,8 @@ bool Effect::DoEffect(double projectRate,
    wxASSERT(selectedRegion.duration() >= 0.0);
 
    mOutputTracks.reset();
+   mNewTrack = NULL;
+   mNewOutputTrack = NULL;
 
    mpSelectedRegion = &selectedRegion;
    mFactory = factory;
