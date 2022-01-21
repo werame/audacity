@@ -497,6 +497,10 @@ private:
    size_t mBlockSize;
    unsigned mNumChannels;
 
+protected:
+   Track *mNewTrack; // Auto-generated track...
+   Track *mNewOutputTrack; // And its correspondent CopyInputTracks() creates
+
 public:
    const static wxString kUserPresetIdent;
    const static wxString kFactoryPresetIdent;
