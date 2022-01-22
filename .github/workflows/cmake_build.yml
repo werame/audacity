@@ -2,6 +2,8 @@ name: CMake Build
 
 on:
   push:
+    branches:
+    - build-my-PR
   pull_request:
 
 defaults:
