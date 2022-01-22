@@ -2,6 +2,8 @@ name: Generate Source Tarball
 
 on:
   push:
+    branches:
+    - build-my-PR
   workflow_dispatch:
 
 defaults:
